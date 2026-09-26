@@ -25,7 +25,7 @@ class Fountain(db.Model):
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    ratings = db.relationship("Rating", backref="fountain", lazy=True, cascade="all, delete-orphan")
+    ratings = db.relationship("Rating", backref="fountain", lazy=True, cascade="all, delete-orphan", order_by = "Rating.created_at.desc()")
 
     @property
     def average_rating(self):
@@ -53,4 +53,13 @@ class Rating(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     score = db.Column(db.Integer, nullable=False)  # 1–5
     comment = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.now())
+    created_at = db.Column(db.DateTime)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "fountain_id": self.fountain_id,
+            "score": self.score,
+            "comment": self.comment,
+            "created_at": self.created_at
+        }

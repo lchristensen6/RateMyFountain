@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, render_template, request
 from models import db, Fountain, Rating
+import datetime
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///fountains.db"
@@ -52,20 +53,23 @@ def create_rating(fountain_id):
     rating = Rating(
         fountain_id=fountain_id,
         score=score,
-        comment=data.get("comment")
+        comment=data.get("comment"),
+        created_at = datetime.datetime.now()
     )
     db.session.add(rating)
     db.session.commit()
 
     return jsonify(fountain.to_dict()), 201
 
-@app.route("/api/fountains/<int:fountain_id>/ratings")
-def get_rating(fountain_id):
+@app.route("/api/fountains/<int:fountain_id>")
+def get_info(fountain_id):
     fountain = Fountain.query.get(fountain_id)
     if fountain is None:
         return jsonify({"error": "Fountain not found"}), 404
 
-    return jsonify(fountain.to_dict()), 201
+    ratings_list = [rating.to_dict() for rating in fountain.ratings]
+    
+    return ratings_list, 201
 
 
 if __name__ == "__main__":
