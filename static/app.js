@@ -4,14 +4,20 @@ const map = L.map('map').setView([40.7829, -73.9654], 13);
 points = {};
 
 function updatePoint(fountain){
-    const rating = fountain.average_rating !== null
-                ? `${fountain.average_rating} / 5 (${fountain.rating_count} ratings)`
-                : 'No ratings yet';
-        return `<strong>${fountain.name}</strong>
-                <br>${fountain.description || ''}
-                <br>"${rating}"
-                <button onclick = "rateFountain(${fountain.id})">Click Me!</button>
-                `
+    return "";
+}
+
+function updateSidebar(fountain){
+    const sidebarTitle = document.querySelector('.sidebartitle');
+    const sidebartext = document.querySelector('.sidebartext');
+    fetch(`/api/fountains/${fountain.id}`)
+    .then(response => response.json())
+    .then(list => {
+        sidebarTitle.textContent = `${fountain.name}`;
+        sidebartext.innerHTML = Object.values(list)
+        .map(item => `<li>Rating: ${item.score ? item.score : ""} ${item.comment ? ", Comment: " + item.comment : ""}</li>`)
+        .join("") 
+    })
 }
 var fountain_icon = L.icon({
     iconUrl: iconUrl,
@@ -26,34 +32,41 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19
 }).addTo(map);
 
-function openSidebar(fountain_id){
+let currentEventHandler = null;
+function addEventListenerWrapper(type, func, obj){
+    if(currentEventHandler) {
+        obj.removeEventListener(type, currentEventHandler);
+    }
+    currentEventHandler = func;
+
+    obj.addEventListener(type, currentEventHandler);
+}
+function submitComment(event, fountain){
+    event.preventDefault();
+    console.log("Comment Form: " + fountain.id);
+    const formData = new FormData(event.target);
+    const comment = formData.get('comment');
+    const rating = parseInt(formData.get('rating'));
+    rateFountain(fountain.id, rating, comment);
+    // console.log(comment);
+    updateSidebar(fountain);
+    return 0;
+}
+function openSidebar(fountain){
     const sidebar = document.querySelector('.sidebar');
     sidebar.classList.add('open');
 
-    const sidebartext = document.querySelector('.sidebartext');
-
     const closeButton = document.getElementById('closeSidebar');
+    const commentForm = document.getElementById('commentForm');
+    // commentForm.addEventListener('submit', (event) => submitComment(event, fountain), {once: true});
+    addEventListenerWrapper('submit', (event) => submitComment(event, fountain), commentForm);
+    updateSidebar(fountain);
+    
     closeButton.addEventListener('click', () => sidebar.classList.remove('open'));
     
-    fetch(`/api/fountains/${fountain_id}`)
-    .then(response => response.json())
-    .then(list => {
-        text = "";
-        list.forEach((list_item) => {
-            text += `Rating: ${list_item.score ? list_item.score : "None"}, 
-            Comment: ${list_item.comment ? list_item.comment : "None"}, Date: ${list_item.created_at ? list_item.created_at : "None"}\n`
-        });
-        sidebartext.setAttribute('style', 'white-space: pre-line;');
-        sidebartext.textContent = text;
-        
-    })
-
-
 
 }
-function rateFountain(fountain_id){
-    rating = parseInt(window.prompt("Rating of fountain:"));
-    comment = window.prompt("Comments: ");
+function rateFountain(fountain_id, rating, comment){
     if(!rating || rating < 1 || rating > 5){
         console.log("cancelled");
         return 0
@@ -76,9 +89,6 @@ function rateFountain(fountain_id){
         .catch(error => console.error('Failed to load fountains:', error));
 }
 
-map.on('popupopen', (ev) => {
-    
-});
 
 map.on('click', function(ev) {
     // console.log(ev.latlng);
@@ -121,8 +131,8 @@ fetch('/api/fountains')
             points[fountain.id] = popup;
             L.marker([fountain.lat, fountain.lng], {icon: fountain_icon})
                 .addTo(map)
-                .bindPopup(popup)
-                .on('click', () => openSidebar(fountain.id));
+                // .bindPopup(popup)
+                .on('click', () => openSidebar(fountain));
         });
     })
     .catch(error => console.error('Failed to load fountains:', error));

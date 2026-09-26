@@ -15,7 +15,6 @@ def index():
 @app.route("/api/fountains")
 def get_fountains():
     fountains = Fountain.query.all()
-    print(fountains)
     return jsonify([f.to_dict() for f in fountains])
 
 @app.route("/api/fountains", methods=["POST"])
