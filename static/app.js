@@ -48,9 +48,6 @@ function submitComment(event, fountain){
     const comment = formData.get('comment');
     const rating = parseInt(formData.get('rating'));
     rateFountain(fountain.id, rating, comment);
-    // console.log(comment);
-    updateSidebar(fountain);
-    return 0;
 }
 function openSidebar(fountain){
     const sidebar = document.querySelector('.sidebar');
@@ -85,6 +82,7 @@ function rateFountain(fountain_id, rating, comment){
             console.log(fountain.average_rating);
             console.log(points[fountain_id]);
             points[fountain_id].setContent(updatePoint(fountain));
+            updateSidebar(fountain);
         })
         .catch(error => console.error('Failed to load fountains:', error));
 }
