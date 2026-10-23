@@ -27,6 +27,10 @@ body {
     padding: 3px;
 }
 
+.star.filled,
+.star {
+  color: #ffcc00; /* Filled/hovered star color */
+}
 .open {
     transform: translateX(105%);
 }

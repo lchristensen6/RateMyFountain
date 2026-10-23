@@ -32,22 +32,41 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19
 }).addTo(map);
 
-let currentEventHandler = null;
-function addEventListenerWrapper(type, func, obj){
-    if(currentEventHandler) {
-        obj.removeEventListener(type, currentEventHandler);
+let currentEventHandler = {};
+function addEventListenerWrapper(type, func, obj, id){
+    console.log(currentEventHandler[id])
+    if(currentEventHandler[id]) {
+        obj.removeEventListener(type, currentEventHandler[id]);
     }
-    currentEventHandler = func;
+    currentEventHandler[id] = func
 
-    obj.addEventListener(type, currentEventHandler);
+    obj.addEventListener(type, currentEventHandler[id]);
 }
 function submitComment(event, fountain){
     event.preventDefault();
     console.log("Comment Form: " + fountain.id);
     const formData = new FormData(event.target);
     const comment = formData.get('comment');
-    const rating = parseInt(formData.get('rating'));
+    // const rating = parseInt(formData.get('rating'));
+    const rating = parseInt(document.querySelector('.active').dataset.value)
+    console.log(rating)
     rateFountain(fountain.id, rating, comment);
+}
+
+function starClicked(event, stars, star){
+    stars.forEach(current_star => {
+        if (parseInt(current_star.dataset.value) <= parseInt(star.dataset.value)){
+            current_star.innerHTML = "&starf;"
+            current_star.classList.remove("active")
+        }else{
+            current_star.innerHTML = "&star;"
+            current_star.classList.remove("active")
+        }
+    });
+
+    star.classList.add("active")
+
+
 }
 function openSidebar(fountain){
     const sidebar = document.querySelector('.sidebar');
@@ -55,8 +74,13 @@ function openSidebar(fountain){
 
     const closeButton = document.getElementById('closeSidebar');
     const commentForm = document.getElementById('commentForm');
-    // commentForm.addEventListener('submit', (event) => submitComment(event, fountain), {once: true});
-    addEventListenerWrapper('submit', (event) => submitComment(event, fountain), commentForm);
+    const stars = document.querySelectorAll('.star');
+
+    stars.forEach(star => {
+        addEventListenerWrapper('click', (event) => starClicked(event, stars, star), star, "starclick")
+    });
+    
+    addEventListenerWrapper('submit', (event) => submitComment(event, fountain), commentForm, "submitbutton");
     updateSidebar(fountain);
     
     closeButton.addEventListener('click', () => sidebar.classList.remove('open'));
