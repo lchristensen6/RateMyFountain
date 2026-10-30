@@ -1,12 +1,13 @@
-body {
+html, body {
     font-family: sans-serif;
     margin: 0;
-    padding: 1rem;
+    height: 100%;
+    overflow: hidden;
 }
 
 #map {
-    height: 500px;
-    width: 100%;
+    position: fixed;
+    inset: 0;
 }
 
 .sidebarelement{

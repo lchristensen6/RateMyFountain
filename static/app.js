@@ -1,5 +1,7 @@
 // Initialize the map, centered roughly on your area (adjust these coordinates)
-const map = L.map('map').setView([40.7829, -73.9654], 13);
+const map = L.map('map')
+// .setView([40.7829, -73.9654], 13); Starting area, clean up after
+map.locate({ setView: true, maxZoom: 40 });
 
 points = {};
 
@@ -44,18 +46,16 @@ function addEventListenerWrapper(type, func, obj, id){
 }
 function submitComment(event, fountain){
     event.preventDefault();
-    console.log("Comment Form: " + fountain.id);
     const formData = new FormData(event.target);
     const comment = formData.get('comment');
     // const rating = parseInt(formData.get('rating'));
     const rating = parseInt(document.querySelector('.active').dataset.value)
-    console.log(rating)
     rateFountain(fountain.id, rating, comment);
 }
 
-function starClicked(event, stars, star){
+function fillInStar(stars, num){
     stars.forEach(current_star => {
-        if (parseInt(current_star.dataset.value) <= parseInt(star.dataset.value)){
+        if (parseInt(current_star.dataset.value) <= num){
             current_star.innerHTML = "&starf;"
             current_star.classList.remove("active")
         }else{
@@ -63,12 +63,17 @@ function starClicked(event, stars, star){
             current_star.classList.remove("active")
         }
     });
+}
+
+function starClicked(event, stars, star){
+    fillInStar(stars, star.dataset.value)
 
     star.classList.add("active")
 
 
 }
 function openSidebar(fountain){
+    map.flyTo([fountain.lat, fountain.lng]);
     const sidebar = document.querySelector('.sidebar');
     sidebar.classList.add('open');
 
@@ -76,6 +81,9 @@ function openSidebar(fountain){
     const commentForm = document.getElementById('commentForm');
     const stars = document.querySelectorAll('.star');
 
+
+    commentForm.reset()
+    fillInStar(stars, 0)
     stars.forEach(star => {
         addEventListenerWrapper('click', (event) => starClicked(event, stars, star), star, "starclick")
     });
@@ -103,8 +111,6 @@ function rateFountain(fountain_id, rating, comment){
     fetch(`/api/fountains/${fountain_id}/ratings`, options)
         .then(response => response.json())
         .then(fountain => {
-            console.log(fountain.average_rating);
-            console.log(points[fountain_id]);
             points[fountain_id].setContent(updatePoint(fountain));
             updateSidebar(fountain);
         })
@@ -117,7 +123,6 @@ map.on('click', function(ev) {
     let lat = ev.latlng.lat;
     let lng = ev.latlng.lng;
     let answer = window.prompt("Name of Water Fountain: ");
-    console.log("lat: " + lat + ",lon: " + lng, "answer: " + answer);
 
     if(!answer || answer == ""){
         console.log("cancelled")
