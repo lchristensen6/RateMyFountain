@@ -1,9 +1,21 @@
 // Initialize the map, centered roughly on your area (adjust these coordinates)
 const map = L.map('map')
 // .setView([40.7829, -73.9654], 13); Starting area, clean up after
-map.locate({ setView: true, maxZoom: 40 });
+map.locate({ setView: true, maxZoom: 19 });
+
+L.control.scale({
+    position: 'bottomleft',
+    metric: true,       // Show kilometres/metres
+    imperial: true      // Show miles/feet
+}).addTo(map);
 
 points = {};
+CONSTANTS = {
+    "FLY_TO_LAT_OFFSET" : 0,
+    "FLY_TO_LNG_OFFSET" : -0.000227
+}
+
+
 
 function updatePoint(fountain){
     return "";
@@ -73,7 +85,9 @@ function starClicked(event, stars, star){
 
 }
 function openSidebar(fountain){
-    map.flyTo([fountain.lat, fountain.lng]);
+    // console.log(CONSTANTS.FLY_TO_LAT_OFFSET)
+    console.log(fountain.lat, fountain.lng)
+    map.flyTo([fountain.lat + CONSTANTS.FLY_TO_LAT_OFFSET, fountain.lng + CONSTANTS.FLY_TO_LNG_OFFSET], 19, {animate : true, duration : 1.0} );
     const sidebar = document.querySelector('.sidebar');
     sidebar.classList.add('open');
 
