@@ -85,15 +85,20 @@ function starClicked(event, stars, star){
 
 }
 function openSidebar(fountain){
-    // console.log(CONSTANTS.FLY_TO_LAT_OFFSET)
-    console.log(fountain.lat, fountain.lng)
-    map.flyTo([fountain.lat + CONSTANTS.FLY_TO_LAT_OFFSET, fountain.lng + CONSTANTS.FLY_TO_LNG_OFFSET], 19, {animate : true, duration : 1.0} );
     const sidebar = document.querySelector('.sidebar');
-    sidebar.classList.add('open');
-
     const closeButton = document.getElementById('closeSidebar');
     const commentForm = document.getElementById('commentForm');
     const stars = document.querySelectorAll('.star');
+
+    // console.log(map.getBounds().getSouthWest().lng)
+    // console.log(map.getBounds().getSouthEast().lng)
+    map_distance = Math.abs((map.getBounds().getSouthWest().lng - map.getBounds().getSouthEast().lng));
+    map_distance_pixels = Math.abs((map.getPixelBounds().getBottomLeft().x - map.getPixelBounds().getBottomRight().x) / 2);
+
+    console.log(map_distance_pixels)
+    sidebar_length = ((sidebar.offsetWidth / 2)/ map_distance_pixels) * map_distance
+    map.flyTo([fountain.lat, fountain.lng - (sidebar_length / 2)], map.getZoom(), {animate : true, duration : 1.0} );
+    sidebar.classList.add('open');
 
 
     commentForm.reset()
