@@ -10,7 +10,7 @@ db.init_app(app)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index1.html")
 
 @app.route("/api/fountains")
 def get_fountains():

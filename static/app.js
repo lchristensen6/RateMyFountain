@@ -10,20 +10,14 @@ L.control.scale({
 }).addTo(map);
 
 points = {};
-CONSTANTS = {
-    "FLY_TO_LAT_OFFSET" : 0,
-    "FLY_TO_LNG_OFFSET" : -0.000227
-}
-
-
 
 function updatePoint(fountain){
     return "";
 }
 
 function updateSidebar(fountain){
-    const sidebarTitle = document.querySelector('.sidebartitle');
-    const sidebartext = document.querySelector('.sidebartext');
+    const sidebarTitle = document.getElementById('fountainName');
+    const sidebartext = document.getElementById('commentsList');
     fetch(`/api/fountains/${fountain.id}`)
     .then(response => response.json())
     .then(list => {
@@ -59,7 +53,7 @@ function addEventListenerWrapper(type, func, obj, id){
 function submitComment(event, fountain){
     event.preventDefault();
     const formData = new FormData(event.target);
-    const comment = formData.get('comment');
+    const comment = formData.get('commentInput');
     // const rating = parseInt(formData.get('rating'));
     const rating = parseInt(document.querySelector('.active').dataset.value)
     rateFountain(fountain.id, rating, comment);
@@ -87,7 +81,7 @@ function starClicked(event, stars, star){
 function openSidebar(fountain){
     const sidebar = document.querySelector('.sidebar');
     const closeButton = document.getElementById('closeSidebar');
-    const commentForm = document.getElementById('commentForm');
+    const ratingForm = document.getElementById('ratingForm');
     const stars = document.querySelectorAll('.star');
 
     // console.log(map.getBounds().getSouthWest().lng)
@@ -101,13 +95,13 @@ function openSidebar(fountain){
     sidebar.classList.add('open');
 
 
-    commentForm.reset()
+    ratingForm.reset()
     fillInStar(stars, 0)
     stars.forEach(star => {
         addEventListenerWrapper('click', (event) => starClicked(event, stars, star), star, "starclick")
     });
     
-    addEventListenerWrapper('submit', (event) => submitComment(event, fountain), commentForm, "submitbutton");
+    addEventListenerWrapper('submit', (event) => submitComment(event, fountain), ratingForm, "submitbutton");
     updateSidebar(fountain);
     
     closeButton.addEventListener('click', () => sidebar.classList.remove('open'));

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fountain Finder</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style1.css') }}">
+</head>
+<body>
+    <script>
+    var iconUrl = "{{ url_for('static', filename='images/fountain.png') }}";
+    </script>
+    <!-- Full-screen map -->
+    <div id="map"></div>
+
+    <!-- Brand chip (top-left) -->
+    <div class="brand">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c3.5 4.3 6 7.4 6 10.5a6 6 0 0 1-12 0c0-3.1 2.5-6.2 6-10.5z" fill="currentColor"/></svg>
+        <span>Fountain Finder</span>
+    </div>
+
+    <!-- Banner shown while the user is placing a new fountain -->
+    <div id="modeBanner" class="mode-banner" role="status" hidden>
+        <span id="modeBannerText">Tap the map to place the fountain</span>
+        <button id="cancelAddMode" type="button" class="banner-cancel">Cancel</button>
+    </div>
+
+    <!-- Floating action buttons (bottom-right) -->
+    <div class="fab-stack">
+        <button id="locateBtn" type="button" class="fab fab-secondary" aria-label="Center map on my location">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3"/>
+            </svg>
+        </button>
+        <button id="addFountainBtn" type="button" class="fab fab-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                <path d="M12 5v14M5 12h14"/>
+            </svg>
+            <span class="fab-label">Add fountain</span>
+        </button>
+    </div>
+
+    <!-- Sidebar: left panel on desktop, bottom sheet on phones -->
+    <aside id="sidebar" class="sidebar" aria-labelledby="sidebarTitle" aria-hidden="true">
+        <header class="sidebar-header">
+            <h2 id="sidebarTitle">Fountain</h2>
+            <button id="closeSidebar" type="button" class="icon-btn" aria-label="Close panel">&times;</button>
+        </header>
+
+        <div class="sidebar-body">
+
+            <!-- VIEW 1: details for a selected fountain -->
+            <section id="detailsView" class="view">
+                <div id="photoWrap" class="photo" hidden>
+                    <img id="fountainPhoto" alt="Photo of the fountain">
+                </div>
+
+                <div class="summary">
+                    <h3 id="fountainName"></h3>
+                    <div class="rating-line">
+                        <span id="avgStars" class="stars-display" aria-hidden="true"></span>
+                        <span id="avgText"></span>
+                    </div>
+                    <p id="fountainDescription" class="description"></p>
+                </div>
+
+                <div class="reviews">
+                    <h4 class="section-title">Reviews</h4>
+                    <ul id="commentsList" class="comments"></ul>
+                    <p id="commentsEmpty" class="empty-state" hidden>No reviews yet. Be the first to rate this fountain!</p>
+                </div>
+
+                <form id="ratingForm" class="review-form">
+                    <h4 class="section-title">Leave a review</h4>
+
+                    <div id="starInput" class="star-input" role="group" aria-label="Your rating">
+                        <button type="button" class="star" data-value="1" aria-label="1 star">&#9733;</button>
+                        <button type="button" class="star" data-value="2" aria-label="2 stars">&#9733;</button>
+                        <button type="button" class="star" data-value="3" aria-label="3 stars">&#9733;</button>
+                        <button type="button" class="star" data-value="4" aria-label="4 stars">&#9733;</button>
+                        <button type="button" class="star" data-value="5" aria-label="5 stars">&#9733;</button>
+                    </div>
+
+                    <!-- <label class="visually-hidden" for="commentInput">Comment</label> -->
+                    <textarea name = "commentInput" id="commentInput" class="input" rows="3" maxlength="500"
+                              placeholder="How's the pressure? Is it cold?"></textarea>
+
+                    <p id="ratingError" class="form-error" role="alert" hidden></p>
+
+                    <button id="submitRating" type="submit" class="btn btn-primary btn-block">Submit review</button>
+                </form>
+            </section>
+
+            <!-- VIEW 2: add a new fountain -->
+            <section id="addView" class="view" hidden>
+                <form id="addFountainForm" class="form">
+                    <p class="coords">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>
+                        </svg>
+                        <span id="addCoords">Tap the map to choose a spot</span>
+                    </p>
+                    <p class="hint">Drag the pin on the map to fine-tune the location.</p>
+
+                    <div class="field">
+                        <label for="addName">Name</label>
+                        <input id="addName" class="input" type="text" maxlength="120" required
+                               placeholder="e.g. Library north entrance">
+                    </div>
+
+                    <div class="field">
+                        <label for="addDescription">Description <span class="optional">(optional)</span></label>
+                        <textarea id="addDescription" class="input" rows="4" maxlength="500"
+                                  placeholder="Cold? Bottle filler? Where exactly is it?"></textarea>
+                    </div>
+
+                    <p id="addError" class="form-error" role="alert" hidden></p>
+
+                    <div class="btn-row">
+                        <button id="cancelAdd" type="button" class="btn btn-ghost">Cancel</button>
+                        <button id="saveFountain" type="submit" class="btn btn-primary">Save fountain</button>
+                    </div>
+                </form>
+            </section>
+
+        </div>
+    </aside>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
