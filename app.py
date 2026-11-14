@@ -84,7 +84,3 @@ def get_info(fountain_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-# # Postgres — your database connection
-# DATABASE_URL="postgresql://neondb_owner:npg_LjDunb8V2IeA@ep-late-leaf-bf7bleag.c-5.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-# DATABASE_URL_POOLED="postgresql://neondb_owner:npg_LjDunb8V2IeA@ep-late-leaf-bf7bleag-pooler.c-5.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
