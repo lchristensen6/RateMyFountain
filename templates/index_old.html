@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fountain Finder</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <script>
+    var iconUrl = "{{ url_for('static', filename='images/fountain.png') }}";
+    </script>
+
+    <h1>Fountain Finder</h1>
+    <div id="map"></div>
+    <div class ="sidebar">
+        <button id="closeSidebar">&times;</button>
+        <h1 class = 'sidebarelement sidebartitle'>Title  guess
+        </h1>
+        <form id = 'commentForm'>
+            <button class = "star" style="background: none; border: none; cursor: pointer;" type="button"; data-value = 1 > &star;</button>
+            <button class = "star" style="background: none; border: none; cursor: pointer;" type="button"; data-value = 2 > &star;</button>
+            <button class = "star" style="background: none; border: none; cursor: pointer;" type="button"; data-value = 3 > &star;</button>
+            <button class = "star" style="background: none; border: none; cursor: pointer;" type="button"; data-value = 4 > &star;</button>
+            <button class = "star" style="background: none; border: none; cursor: pointer;" type="button"; data-value = 5 > &star;</button>
+            <input type="text" name="comment" placeholder="Enter comment"/>
+            <button type="submit">Submit</button>
+        </form>
+        <div class = "sidebarelement sidebartext">
+            Body woo
+        </div>
+        <div>
+            Add a new fountain!!!
+        </div>
+    </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

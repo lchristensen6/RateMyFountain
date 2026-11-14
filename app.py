@@ -1,16 +1,27 @@
+import os
 from flask import Flask, jsonify, render_template, request
 from models import db, Fountain, Rating
 import datetime
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///fountains.db"
+database_url = os.environ.get("DATABASE_URL", "sqlite:///fountains.db")
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql+psycopg://", 1)
+elif database_url.startswith("postgresql://"):
+    database_url = database_url.replace("postgresql://", "postgresql+psycopg://", 1)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True, "pool_recycle": 300}
 
 db.init_app(app)
 
+with app.app_context():
+    db.create_all()
+
 @app.route("/")
 def index():
-    return render_template("index1.html")
+    return render_template("index.html")
 
 @app.route("/api/fountains")
 def get_fountains():
@@ -72,6 +83,8 @@ def get_info(fountain_id):
 
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
+
+# # Postgres — your database connection
+# DATABASE_URL="postgresql://neondb_owner:npg_LjDunb8V2IeA@ep-late-leaf-bf7bleag.c-5.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+# DATABASE_URL_POOLED="postgresql://neondb_owner:npg_LjDunb8V2IeA@ep-late-leaf-bf7bleag-pooler.c-5.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
