@@ -6,10 +6,14 @@
 
 /* ---------- 1. Design tokens ---------- */
 :root {
+    /* ':root' means the whole page. The names that start with two dashes are CSS variables */
+    /* (called design tokens here): define a color or size once, then reuse it anywhere with */
+    /* var(--name). Change --accent and the whole app changes color. */
     --accent: #0891b2;
     --accent-dark: #0e7490;
     --accent-soft: #ecfeff;
 
+    /* Text colors, plus border and background shades. */
     --text: #0f172a;
     --text-soft: #334155;
     --muted: #64748b;
@@ -17,14 +21,17 @@
     --surface: #ffffff;
     --bg-soft: #f8fafc;
 
+    /* Star colors (gold when filled, gray when empty) and the red used for error messages. */
     --star: #f59e0b;
     --star-off: #cbd5e1;
     --danger: #dc2626;
     --danger-soft: #fef2f2;
 
+    /* Corner roundness: a bigger number means rounder corners. */
     --radius: 16px;
     --radius-sm: 10px;
 
+    /* Shadows: a soft dark glow that makes floating things look lifted off the page. */
     --shadow-md: 0 6px 20px rgba(15, 23, 42, 0.18);
     --shadow-lg: 0 10px 40px rgba(15, 23, 42, 0.25);
 
@@ -35,19 +42,27 @@
     --z-ui: 1100;
     --z-sidebar: 1200;
 
+    /* The font list. The browser uses the first font it finds on the visitor's device (system-ui */
+    /* is the phone or computer's own default font). */
     --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* ---------- 2. Base ---------- */
+/* Applies to every element. box-sizing: border-box makes an element's width include its padding */
+/* and border, which makes sizing much more predictable. */
 *, *::before, *::after {
     box-sizing: border-box;
 }
 
 /* Without this, `display: flex` on an element beats the [hidden] attribute */
 [hidden] {
+    /* Anything with the hidden attribute in the HTML is removed from the page entirely. */
+    /* !important means this rule wins over any other rule. */
     display: none !important;
 }
 
+/* Page-wide basics: no margin around the page, exactly the screen's height, and no page */
+/* scrolling (the sidebar scrolls by itself). Also sets the font and text color for everything. */
 html, body {
     margin: 0;
     height: 100%;
@@ -58,15 +73,20 @@ html, body {
     -webkit-tap-highlight-color: transparent;
 }
 
+/* Buttons do not use the page font by default; this makes them match. */
 button {
     font-family: inherit;
 }
 
+/* Outline drawn around a button or box when you move to it with the keyboard (Tab key). It helps */
+/* people who do not use a mouse, so it is best to keep it. */
 :focus-visible {
     outline: 3px solid rgba(8, 145, 178, 0.5);
     outline-offset: 2px;
 }
 
+/* Hides something visually but keeps it readable by screen readers. Not used right now (the */
+/* label that needed it is commented out in the HTML). */
 .visually-hidden {
     position: absolute;
     width: 1px;
@@ -80,6 +100,9 @@ button {
 }
 
 /* ---------- 3. Map & floating UI ---------- */
+/* #map: the # selects the element with the id map. position: fixed pins it to the window, and */
+/* inset: 0 stretches it to all four edges, so it fills the whole screen. z-index: 0 puts it at */
+/* the bottom of the stack, so everything else floats above it. */
 #map {
     position: fixed;
     inset: 0;
@@ -87,17 +110,24 @@ button {
 }
 
 /* Crosshair cursor while placing a new fountain */
+/* Selectors that start with body.add-mode only apply when the page's body has the class */
+/* add-mode. app.js does not add that class yet, so this crosshair cursor is not used right now. */
 body.add-mode .leaflet-container,
 body.add-mode .leaflet-grab {
     cursor: crosshair;
 }
 
+/* Leaflet's popup bubble (the white speech bubble that opens from a marker): rounded corners and */
+/* a shadow. Popups are mostly unused now, since the sidebar replaced them. */
 .leaflet-popup-content-wrapper {
     border-radius: var(--radius-sm);
     box-shadow: var(--shadow-md);
 }
 
 /* Brand chip */
+/* HEADS-UP: this .brand rule, and the floating-button rules (.fab, .fab-stack and friends) */
+/* further down, style elements that are NOT in your current index.html. They do nothing right */
+/* now. Keep them if you plan to add those elements later, or delete them. */
 .brand {
     position: fixed;
     top: calc(16px + env(safe-area-inset-top));
@@ -122,6 +152,10 @@ body.add-mode .leaflet-grab {
 
 /* Add-mode banner */
 .mode-banner {
+    /* A pill-shaped bar fixed at the top center of the screen. left: 50% plus translateX(-50%) */
+    /* is the classic centering trick: move the left edge to the middle, then pull it back by */
+    /* half its own width. display: flex lines the children up in a row, and gap adds space */
+    /* between them. */
     position: fixed;
     top: calc(16px + env(safe-area-inset-top));
     left: 50%;
@@ -140,6 +174,8 @@ body.add-mode .leaflet-grab {
     font-size: 0.92rem;
 }
 
+/* The Cancel button inside the banner. transition makes the background color change smoothly */
+/* instead of snapping. */
 .banner-cancel {
     flex: none;
     min-height: 36px;
@@ -153,11 +189,13 @@ body.add-mode .leaflet-grab {
     transition: background-color 0.15s;
 }
 
+/* :hover means 'while the mouse is over it'. */
 .banner-cancel:hover {
     background: rgba(255, 255, 255, 0.32);
 }
 
 /* Floating action buttons */
+/* (Unused for now: there are no .fab elements in index.html. See the heads-up above.) */
 .fab-stack {
     position: fixed;
     right: 16px;
@@ -222,6 +260,9 @@ body.add-mode .fab-primary {
 }
 
 /* ---------- 4. Sidebar shell ---------- */
+/* The sidebar panel. position: fixed with top, left and bottom at 0 pins it to the left edge at */
+/* full height. display: flex with flex-direction: column stacks its header and body vertically. */
+/* z-index: 1200 keeps it above the map. */
 .sidebar {
     position: fixed;
     top: 0;
@@ -235,11 +276,18 @@ body.add-mode .fab-primary {
     box-shadow: var(--shadow-lg);
 
     /* Closed: slid fully off the left edge and removed from tab order */
+    /* translateX(-105%) slides the panel left by slightly more than its own width, so it is */
+    /* hidden off screen. visibility: hidden also stops the Tab key from landing on invisible */
+    /* buttons. The transition line animates the slide over 0.3 seconds; the visibility change */
+    /* waits 0.3 seconds so the panel stays visible while it slides away. */
     transform: translateX(-105%);
     visibility: hidden;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.3s;
 }
 
+/* When app.js adds the class open to the sidebar, this rule takes over: the panel slides back on */
+/* screen (translateX(0)) and becomes visible. '.sidebar.open' with no space between means an */
+/* element that has BOTH classes. */
 .sidebar.open {
     transform: translateX(0);
     visibility: visible;
@@ -247,6 +295,9 @@ body.add-mode .fab-primary {
 }
 
 /* Drag-handle look for the mobile bottom sheet (hidden on desktop) */
+/* ::before creates an extra element at the start of the sidebar. Here it is a small gray bar, a */
+/* drag-handle look. It is turned off on desktop (display: none) and turned on for phones in the */
+/* responsive section at the bottom. */
 .sidebar::before {
     content: "";
     display: none;
@@ -258,6 +309,8 @@ body.add-mode .fab-primary {
     background: var(--border);
 }
 
+/* The top strip of the sidebar: title on the left, close button on the right (justify-content: */
+/* space-between pushes them to opposite ends), with a thin line underneath. */
 .sidebar-header {
     flex: none;
     display: flex;
@@ -277,6 +330,8 @@ body.add-mode .fab-primary {
     text-overflow: ellipsis;
 }
 
+/* The round close (X) button. display: grid with place-items: center centers the X; */
+/* border-radius: 50% makes it a circle; cursor: pointer shows the hand cursor. */
 .icon-btn {
     flex: none;
     display: grid;
@@ -298,6 +353,8 @@ body.add-mode .fab-primary {
     color: var(--text);
 }
 
+/* The area below the header. flex: 1 makes it use all the remaining height, and overflow-y: auto */
+/* adds a scrollbar only when the content is too tall. */
 .sidebar-body {
     flex: 1;
     overflow-y: auto;
@@ -313,12 +370,14 @@ body.add-mode .fab-primary {
 }
 
 /* ---------- 5. Details view ---------- */
+/* Photo box in a widescreen 16:9 shape. Not shown right now (the HTML keeps it hidden). */
 .photo {
     flex: none;
     aspect-ratio: 16 / 9;
     background: var(--bg-soft);
 }
 
+/* object-fit: cover crops the picture to fill the box without stretching it. */
 .photo img {
     display: block;
     width: 100%;
@@ -326,10 +385,13 @@ body.add-mode .fab-primary {
     object-fit: cover;
 }
 
+/* Name, rating and description area. padding is the space inside the box. */
 .summary {
     padding: 18px 20px 6px;
 }
 
+/* The fountain's name. overflow-wrap: anywhere lets very long words break so they cannot push */
+/* past the edge of the sidebar. */
 .summary h3 {
     margin: 0 0 6px;
     font-size: 1.4rem;
@@ -338,6 +400,7 @@ body.add-mode .fab-primary {
     overflow-wrap: anywhere;
 }
 
+/* A row holding the average stars and the rating text. */
 .rating-line {
     display: flex;
     align-items: center;
@@ -347,6 +410,7 @@ body.add-mode .fab-primary {
     color: var(--muted);
 }
 
+/* Gold color and spacing for stars that are shown as text. */
 .stars-display {
     color: var(--star);
     letter-spacing: 2px;
@@ -365,6 +429,7 @@ body.add-mode .fab-primary {
     padding: 6px 20px 16px;
 }
 
+/* The small gray uppercase headings such as REVIEWS and LEAVE A REVIEW. */
 .section-title {
     margin: 14px 0 10px;
     font-size: 0.75rem;
@@ -374,6 +439,8 @@ body.add-mode .fab-primary {
     color: var(--muted);
 }
 
+/* The review list. list-style: none removes the bullet dots, and flex with gap spaces the items */
+/* evenly in a column. */
 .comments {
     list-style: none;
     margin: 0;
@@ -384,6 +451,8 @@ body.add-mode .fab-primary {
 }
 
 /* Comment card (JS builds these: li.comment > .comment-head + .comment-text) */
+/* HEADS-UP: app.js currently builds plain list items with no class, so these .comment card */
+/* styles are not applied yet. They would apply if app.js gave each item the class comment. */
 .comment {
     padding: 12px 14px;
     background: var(--bg-soft);
@@ -421,6 +490,7 @@ body.add-mode .fab-primary {
     overflow-wrap: anywhere;
 }
 
+/* A friendly message box with a dashed border, for when there is nothing to show yet. */
 .empty-state {
     margin: 0;
     padding: 22px 16px;
@@ -432,6 +502,9 @@ body.add-mode .fab-primary {
 }
 
 /* Review form pinned to the bottom of the panel */
+/* position: sticky with bottom: 0 keeps the form stuck to the bottom of the sidebar while the */
+/* reviews scroll above it. The background stops review cards from showing through. */
+/* env(safe-area-inset-bottom) adds extra space on phones that have a home bar along the bottom. */
 .review-form {
     position: sticky;
     bottom: 0;
@@ -449,12 +522,17 @@ body.add-mode .fab-primary {
 }
 
 /* Clickable star input (JS toggles .filled) */
+/* HEADS-UP: app.js currently shows a selected star by swapping the character (a filled star */
+/* versus an outline star) and adds the class active, not filled, so the .filled color below is */
+/* not used yet. */
 .star-input {
     display: flex;
     gap: 2px;
     margin-left: -6px;
 }
 
+/* Each star button. appearance: none removes the browser's default button look. 44 by 44 pixels */
+/* is a comfortable size for a finger tap. */
 .star {
     appearance: none;
     flex: none;
@@ -475,6 +553,8 @@ body.add-mode .fab-primary {
     color: var(--star);
 }
 
+/* This rule only applies on devices with a real mouse (not touchscreens): a star grows slightly */
+/* while you hover over it. */
 @media (hover: hover) {
     .star:hover {
         transform: scale(1.15);
@@ -482,6 +562,8 @@ body.add-mode .fab-primary {
 }
 
 /* ---------- 6. Forms & buttons ---------- */
+/* FORMS: the 'add a fountain' form. A column with space between items (gap) and space inside */
+/* (padding). */
 .form {
     display: flex;
     flex-direction: column;
@@ -489,6 +571,7 @@ body.add-mode .fab-primary {
     padding: 20px;
 }
 
+/* A field is a label stacked above its input. */
 .field {
     display: flex;
     flex-direction: column;
@@ -505,6 +588,7 @@ body.add-mode .fab-primary {
     color: var(--muted);
 }
 
+/* Shared look for every text box and text area (anything with the class input). */
 /* 16px font stops iOS Safari from zooming in when an input is focused */
 .input {
     width: 100%;
@@ -518,21 +602,27 @@ body.add-mode .fab-primary {
     transition: border-color 0.15s, box-shadow 0.15s;
 }
 
+/* ::placeholder styles the gray hint text shown inside an empty box. */
 .input::placeholder {
     color: #94a3b8;
 }
 
+/* :focus applies while you are typing in the box. This swaps the default outline for a colored */
+/* border and a soft glow. */
 .input:focus {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.2);
 }
 
+/* Multi-line text areas: a minimum height, and the user may drag to resize them up and down. */
 textarea.input {
     min-height: 84px;
     resize: vertical;
 }
 
+/* The blue box that shows the chosen location. tabular-nums makes digits the same width so */
+/* changing numbers do not jiggle. */
 .coords {
     display: flex;
     align-items: center;
@@ -559,6 +649,7 @@ textarea.input {
     color: var(--muted);
 }
 
+/* Red error message box. */
 .form-error {
     margin: 0;
     padding: 9px 12px;
@@ -568,6 +659,8 @@ textarea.input {
     font-size: 0.88rem;
 }
 
+/* BUTTONS. This is the shared base for every button with the class btn: size, padding, rounded */
+/* corners and bold text. Colors come from the variants below (btn-primary, btn-ghost). */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -583,15 +676,19 @@ textarea.input {
     transition: background-color 0.15s, border-color 0.15s, transform 0.1s;
 }
 
+/* :active means 'while being pressed'. :not(:disabled) means 'only if the button is switched */
+/* on'. The button shrinks slightly when pressed. */
 .btn:active:not(:disabled) {
     transform: scale(0.98);
 }
 
+/* A disabled button looks faded and shows a 'not allowed' cursor. */
 .btn:disabled {
     opacity: 0.55;
     cursor: not-allowed;
 }
 
+/* The main button style (solid blue). */
 .btn-primary {
     background: var(--accent);
     color: #fff;
@@ -601,6 +698,7 @@ textarea.input {
     background: var(--accent-dark);
 }
 
+/* The quieter button style (outline only). */
 .btn-ghost {
     background: transparent;
     border-color: var(--border);
@@ -611,10 +709,12 @@ textarea.input {
     background: var(--bg-soft);
 }
 
+/* Stretches a button to the full width of its container. */
 .btn-block {
     width: 100%;
 }
 
+/* Puts buttons in a row. flex: 1 (below) makes each button share the space equally. */
 .btn-row {
     display: flex;
     gap: 10px;
@@ -627,6 +727,10 @@ textarea.input {
 /* ---------- 7. Responsive ---------- */
 
 /* Phones & small tablets: sidebar becomes a bottom sheet */
+/* RESPONSIVE: a media query is a rule that only applies when a condition is true. This one */
+/* applies when the screen is 768 pixels wide or less (phones and small tablets). The sidebar */
+/* stops being a left-hand panel and becomes a bottom sheet that slides up from the bottom */
+/* (translateY moves things up and down, where translateX moved them left and right). */
 @media (max-width: 768px) {
     .sidebar {
         top: auto;
@@ -660,6 +764,8 @@ textarea.input {
 
 /* Very narrow phones: icon-only add button */
 @media (max-width: 380px) {
+    /* (The floating add button does not exist in the current HTML, so this rule does nothing */
+    /* right now.) */
     .fab-label {
         display: none;
     }
@@ -671,6 +777,8 @@ textarea.input {
 }
 
 /* Phones held sideways: short screen, so use a side panel again */
+/* Phone turned sideways: there is very little height, so go back to a side panel. The three */
+/* conditions in this media query are joined with 'and', and all of them must be true. */
 @media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
     .sidebar {
         top: 0;
@@ -694,6 +802,8 @@ textarea.input {
     }
 }
 
+/* Respects people who set their device to reduce animation: this makes every animation finish */
+/* almost instantly. */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         transition-duration: 0.01ms !important;

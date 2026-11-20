@@ -1,61 +1,83 @@
 <!DOCTYPE html>
 <html>
+<!-- FILE OVERVIEW: templates/index.html -->
+<!-- This is the only web page in the app. Flask sends it to the browser when someone visits the -->
+<!-- home page. HTML describes the STRUCTURE of the page (which pieces exist). style.css -->
+<!-- controls how it LOOKS and app.js controls how it BEHAVES. -->
+<!-- A handy way to remember it: HTML is the skeleton, CSS is the clothes, JavaScript is the -->
+<!-- muscles. -->
+<!-- Heads-up: the bits wrapped in double curly braces further down are not normal HTML. Flask -->
+<!-- fills them in (using a tool called Jinja) with real web addresses before the page is sent -->
+<!-- out. -->
+
 <head>
+    <!-- HEAD: settings and links to other files. Nothing in the head shows up on the page -->
+    <!-- itself. -->
+    <!-- Tells the browser which text encoding to use, so letters and symbols display correctly. -->
     <meta charset="UTF-8">
+    <!-- Makes the page fit a phone screen. Without this, phones show a tiny zoomed-out desktop -->
+    <!-- page. -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The text shown on the browser tab. -->
     <title>Fountain Finder</title>
+    <!-- Loads Leaflet's stylesheet from the internet (a free file host called unpkg). Leaflet -->
+    <!-- is the library that draws the map, and this file styles its buttons and map tiles. -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Loads YOUR stylesheet. The url_for part builds the correct address of the file -->
+    <!-- static/style.css, so you never have to type the path by hand. -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+<!-- BODY: everything inside here is what actually appears on screen. -->
 <body>
+    <!-- A tiny script that passes one value from Flask to JavaScript: the web address of the -->
+    <!-- fountain icon image. Flask fills in the address, and app.js later reads the variable -->
+    <!-- called iconUrl. (app.js cannot do this itself, because Flask only fills in values -->
+    <!-- inside HTML files.) -->
     <script>
     var iconUrl = "{{ url_for('static', filename='images/fountain.png') }}";
     </script>
     <!-- Full-screen map -->
+    <!-- An empty box. Leaflet (in app.js) finds it by its id, map, and draws the interactive -->
+    <!-- map inside it. style.css stretches it to fill the whole screen. -->
     <div id="map"></div>
 
-    <!-- Brand chip (top-left) -->
-    <div class="brand">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c3.5 4.3 6 7.4 6 10.5a6 6 0 0 1-12 0c0-3.1 2.5-6.2 6-10.5z" fill="currentColor"/></svg>
-        <span>Fountain Finder</span>
-    </div>
-
     <!-- Banner shown while the user is placing a new fountain -->
+    <!-- Banner meant to appear while a user is placing a new fountain. The hidden attribute -->
+    <!-- keeps it invisible. app.js does not use it yet, so it never shows right now. -->
     <div id="modeBanner" class="mode-banner" role="status" hidden>
         <span id="modeBannerText">Tap the map to place the fountain</span>
         <button id="cancelAddMode" type="button" class="banner-cancel">Cancel</button>
     </div>
 
-    <!-- Floating action buttons (bottom-right) -->
-    <div class="fab-stack">
-        <button id="locateBtn" type="button" class="fab fab-secondary" aria-label="Center map on my location">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3"/>
-            </svg>
-        </button>
-        <button id="addFountainBtn" type="button" class="fab fab-primary">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
-                <path d="M12 5v14M5 12h14"/>
-            </svg>
-            <span class="fab-label">Add fountain</span>
-        </button>
-    </div>
-
     <!-- Sidebar: left panel on desktop, bottom sheet on phones -->
+    <!-- SIDEBAR: the panel that slides in when you click a fountain. 'aside' just means side -->
+    <!-- content. It stays off screen until app.js adds the class open to it. The aria -->
+    <!-- attributes are labels for screen readers (software that reads pages aloud for people -->
+    <!-- who cannot see the screen). -->
     <aside id="sidebar" class="sidebar" aria-labelledby="sidebarTitle" aria-hidden="true">
+        <!-- Top strip of the sidebar: a title and a close button. -->
         <header class="sidebar-header">
             <h2 id="sidebarTitle">Fountain</h2>
+            <!-- The close (X) button. app.js finds it by its id, closeSidebar, and closes the -->
+            <!-- sidebar when it is clicked. The code &times; is just the X symbol. -->
             <button id="closeSidebar" type="button" class="icon-btn" aria-label="Close panel">&times;</button>
         </header>
 
+        <!-- The scrollable area under the header. It holds two 'views' (screens), and only one -->
+        <!-- is shown at a time. -->
         <div class="sidebar-body">
 
             <!-- VIEW 1: details for a selected fountain -->
+            <!-- VIEW 1, the details screen. app.js currently fills in only the fountain name -->
+            <!-- (fountainName) and the review list (commentsList). The photo, average stars, -->
+            <!-- average text and description below are placeholders for features to come. -->
             <section id="detailsView" class="view">
+                <!-- Photo area. Hidden for now, because nothing sets the picture yet. -->
                 <div id="photoWrap" class="photo" hidden>
                     <img id="fountainPhoto" alt="Photo of the fountain">
                 </div>
 
+                <!-- Summary block: name, average rating and description. -->
                 <div class="summary">
                     <h3 id="fountainName"></h3>
                     <div class="rating-line">
@@ -65,15 +87,26 @@
                     <p id="fountainDescription" class="description"></p>
                 </div>
 
+                <!-- REVIEWS: the list of ratings other people left. -->
                 <div class="reviews">
                     <h4 class="section-title">Reviews</h4>
+                    <!-- An empty list. app.js fills it with one item per rating it gets from -->
+                    <!-- the server (it finds the list by its id, commentsList). -->
                     <ul id="commentsList" class="comments"></ul>
+                    <!-- Friendly 'no reviews yet' message for when the list is empty. Hidden, -->
+                    <!-- and not used by app.js yet. -->
                     <p id="commentsEmpty" class="empty-state" hidden>No reviews yet. Be the first to rate this fountain!</p>
                 </div>
 
+                <!-- REVIEW FORM. A form groups inputs together so they can be sent as one unit. -->
+                <!-- app.js listens for the form's submit event, stops the page from reloading, -->
+                <!-- and sends the rating to the server instead. -->
                 <form id="ratingForm" class="review-form">
                     <h4 class="section-title">Leave a review</h4>
 
+                    <!-- The five stars. Each button stores its number (1 to 5) in data-value, -->
+                    <!-- which app.js reads when you click it. type=button stops a star from -->
+                    <!-- submitting the form by accident. &#9733; is the code for a star symbol. -->
                     <div id="starInput" class="star-input" role="group" aria-label="Your rating">
                         <button type="button" class="star" data-value="1" aria-label="1 star">&#9733;</button>
                         <button type="button" class="star" data-value="2" aria-label="2 stars">&#9733;</button>
@@ -82,19 +115,32 @@
                         <button type="button" class="star" data-value="5" aria-label="5 stars">&#9733;</button>
                     </div>
 
+                    <!-- The next line is old code that was switched off by wrapping it in a -->
+                    <!-- comment, so it does nothing. It is a label for the comment box below. -->
                     <!-- <label class="visually-hidden" for="commentInput">Comment</label> -->
+                    <!-- Text box for the written comment. app.js reads what you typed by -->
+                    <!-- looking up its name attribute (commentInput). maxlength stops people -->
+                    <!-- from typing more than 500 characters. -->
                     <textarea name = "commentInput" id="commentInput" class="input" rows="3" maxlength="500"
                               placeholder="How's the pressure? Is it cold?"></textarea>
 
+                    <!-- Space for an error message to the user. Hidden, and not used by app.js -->
+                    <!-- yet. -->
                     <p id="ratingError" class="form-error" role="alert" hidden></p>
 
+                    <!-- Submit button. Clicking it fires the form's submit event. -->
                     <button id="submitRating" type="submit" class="btn btn-primary btn-block">Submit review</button>
                 </form>
             </section>
 
             <!-- VIEW 2: add a new fountain -->
+            <!-- VIEW 2, the add-a-fountain screen: a form for a new fountain's name and -->
+            <!-- description. Hidden, and app.js does not switch to it yet. Right now new -->
+            <!-- fountains are added by clicking the map and typing a name in a pop-up box. -->
             <section id="addView" class="view" hidden>
                 <form id="addFountainForm" class="form">
+                    <!-- Shows the latitude and longitude of the chosen spot. The small picture -->
+                    <!-- inside is an SVG, an image drawn with code instead of a picture file. -->
                     <p class="coords">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>
@@ -103,20 +149,27 @@
                     </p>
                     <p class="hint">Drag the pin on the map to fine-tune the location.</p>
 
+                    <!-- A 'field' is a label plus its input, grouped together so CSS can space -->
+                    <!-- them out. -->
                     <div class="field">
                         <label for="addName">Name</label>
+                        <!-- 'required' means the browser will not send the form if this is -->
+                        <!-- empty. maxlength limits how many characters can be typed. -->
                         <input id="addName" class="input" type="text" maxlength="120" required
                                placeholder="e.g. Library north entrance">
                     </div>
 
                     <div class="field">
                         <label for="addDescription">Description <span class="optional">(optional)</span></label>
+                        <!-- Multi-line box for an optional description. -->
                         <textarea id="addDescription" class="input" rows="4" maxlength="500"
                                   placeholder="Cold? Bottle filler? Where exactly is it?"></textarea>
                     </div>
 
+                    <!-- Space for an error message for this form. Hidden for now. -->
                     <p id="addError" class="form-error" role="alert" hidden></p>
 
+                    <!-- Row holding the Cancel and Save buttons side by side. -->
                     <div class="btn-row">
                         <button id="cancelAdd" type="button" class="btn btn-ghost">Cancel</button>
                         <button id="saveFountain" type="submit" class="btn btn-primary">Save fountain</button>
@@ -127,7 +180,13 @@
         </div>
     </aside>
 
+    <!-- SCRIPTS: placed at the end of the body so every element above already exists when the -->
+    <!-- code runs. -->
+    <!-- First, the Leaflet library itself (the code that knows how to draw maps), loaded from -->
+    <!-- the internet. -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Second, YOUR JavaScript file. It must come after Leaflet because it uses Leaflet's L -->
+    <!-- object. The url_for part builds the address of static/app.js. -->
     <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
